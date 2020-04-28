@@ -95,8 +95,10 @@ app.get('/', (req, res) => {
 function handleMessage(sender_psid, received_message) {
     
     // for POC, send back the message, reversed.
-    var reversed_text = received_message.text.split("").reverse().join("");
-    callSendAPI(sender_psid, reversed_text);
+    if (received_message.text){
+      var reversed_text = received_message.text.split("").reverse().join("");
+      callSendAPI(sender_psid, reversed_text);
+    }
 }
 
 // Handles messaging_postbacks events
