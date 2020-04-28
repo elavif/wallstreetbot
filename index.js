@@ -12,9 +12,6 @@ const request = require('request');
 // Sets server port and logs message on success
 app.listen(process.env.PORT || 1337, () => console.log('webhook is listening'));
 
-
-const PAGE_ACCESS_TOKEN = "EAARkZCR7N9J4BAGXmo3hVOhfiV7fKF4SgXzApsOQJkQsJUnmXpgqGaxlsuMVadNloV2NInMg30cyzbW2Xl9bPVMN1sCcI1sZBQx2XT16MdfG4HI2DwT3XAyQ7YWHGSjqn3FQPmS6HMCh1aIWFoDS0UW0AyNn4N2VFTUvFdNwZDZD"
-
 // Creates the endpoint for our webhook 
 app.post('/webhook', (req, res) => {  
  
@@ -116,8 +113,6 @@ function callSendAPI(sender_psid, message) {
       },
       "message": message
     }
-
-    console.log(process.env.PAGE_ACCESS_TOKEN)
     // Send the HTTP request to the Messenger Platform
     request({
       "uri": "https://graph.facebook.com/v2.6/me/messages",
@@ -126,7 +121,9 @@ function callSendAPI(sender_psid, message) {
       "json": request_body
     }, (err, res, body) => {
       if (!err) {
-        console.log('message sent!')
+        console.log('message sent! Got response:')
+        let json = JSON.parse(body);
+        console.log(json);
       } else {
         console.error("Unable to send message:" + err);
       }
