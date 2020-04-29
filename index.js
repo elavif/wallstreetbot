@@ -8,6 +8,7 @@ const
 
 const fs = require('fs');
 const request = require('request');
+const { Client } = require('pg');
 
 // Sets server port and logs message on success
 app.listen(process.env.PORT || 1337, () => console.log('webhook is listening'));
@@ -77,17 +78,18 @@ app.get('/webhook', (req, res) => {
   }
 });
 
-app.get('/', (req, res) => {
-  fs.readFile('html/index.html', function (err, html) {
-    if (err) {
-      res.status(404);
-    }
-    else {
-      res.writeHeader(200, {"Content-Type": "text/html"});
-      res.write(html);
-      res.end();
-    }
-  });
+app.get('/users', (req, res) => {
+   const client = new Client({
+     connectionString: process.env.DATABASE_URL,
+     ssl: process.env.hasOwnProperty("WSB_DO_USE_SSL"),
+   });
+
+   client.connect();
+
+   client.query('SELECT * FROM users', (error, results) => {
+        res.status(200).send(results);
+        client.end();
+   })
 });
 
 
