@@ -1,7 +1,26 @@
-module.exports = {
 
-  // Sends response messages via the Send API
-  callSendAPI: function callSendAPI(sender_psid, message) {
+
+function handleMessage (sender_psid, received_message) {
+      
+      // for POC, send back the message, reversed.
+      if (received_message.text){
+        var reversed_text = received_message.text.split("").reverse().join("");
+        sendText(sender_psid, reversed_text);
+      }
+}
+
+
+function handlePostback(sender_psid, received_postback) {
+
+}
+
+function sendText (sender_psid, reply){
+    callSendAPI(sender_psid, {
+          "text": message
+        });
+}
+
+function callSendAPI(sender_psid, message) {
       // Construct the message body
       let request_body = {
         "recipient": {
@@ -22,27 +41,15 @@ module.exports = {
         } else {
           console.error("Unable to send message:" + err);
         }
-      }); 
-  },
+      });
+} 
 
-  sendText: function (sender_psid, reply){
-    callSendAPI(sender_psid, {
-          "text": message
-        });
-  },
+module.exports = {
+  callSendAPI: callSendAPI,
 
-  // Handles messages events
-  handleMessage: function(sender_psid, received_message) {
-      
-      // for POC, send back the message, reversed.
-      if (received_message.text){
-        var reversed_text = received_message.text.split("").reverse().join("");
-        sendText(sender_psid, reversed_text);
-      }
-  },
+  sendText: sendText,
 
-  // Handles messaging_postbacks events
-  handlePostback: function (sender_psid, received_postback) {
+  handleMessage: handleMessage,
 
-  },
+  handlePostback: handlePostback, 
 }
