@@ -9,6 +9,7 @@ const
 const fs = require('fs');
 const request = require('request');
 const { Client } = require('pg');
+const fb_utils = require('./fb_utils');
 
 // Sets server port and logs message on success
 app.listen(process.env.PORT || 1337, () => console.log('webhook is listening'));
