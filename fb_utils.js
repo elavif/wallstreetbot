@@ -1,4 +1,4 @@
-
+const request = require('request');
 
 function handleMessage (sender_psid, received_message) {
       
@@ -16,7 +16,7 @@ function handlePostback(sender_psid, received_postback) {
 
 function sendText (sender_psid, reply){
     callSendAPI(sender_psid, {
-          "text": message
+          "text": reply
         });
 }
 
