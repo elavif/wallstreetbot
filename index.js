@@ -35,9 +35,9 @@ app.post('/webhook', (req, res) => {
         // Check if the event is a message or postback and
         // pass the event to the appropriate handler function
         if (webhook_event.message) {
-          handleMessage(sender_psid, webhook_event.message);        
+          fb_utils.handleMessage(sender_psid, webhook_event.message);        
         } else if (webhook_event.postback) {
-          handlePostback(sender_psid, webhook_event.postback);
+          fb_utils.handlePostback(sender_psid, webhook_event.postback);
         }
     });
 
@@ -92,45 +92,3 @@ app.get('/users', (req, res) => {
    })
 });
 
-
-// Handles messages events
-function handleMessage(sender_psid, received_message) {
-    
-    // for POC, send back the message, reversed.
-    if (received_message.text){
-      var reversed_text = received_message.text.split("").reverse().join("");
-      callSendAPI(sender_psid, reversed_text);
-    }
-}
-
-// Handles messaging_postbacks events
-function handlePostback(sender_psid, received_postback) {
-
-}
-
-// Sends response messages via the Send API
-function callSendAPI(sender_psid, message) {
-    // Construct the message body
-    let request_body = {
-      "recipient": {
-        "id": sender_psid
-      },
-      "message": {
-        "text": message
-      }
-    }
-    // Send the HTTP request to the Messenger Platform
-    request({
-      "uri": "https://graph.facebook.com/v6.0/me/messages",
-      "qs": { "access_token": process.env.PAGE_ACCESS_TOKEN },
-      "method": "POST",
-      "json": request_body
-    }, (err, res, body) => {
-      if (!err) {
-        console.log('message sent! Got response:');
-        console.log(body);
-      } else {
-        console.error("Unable to send message:" + err);
-      }
-    }); 
-}
