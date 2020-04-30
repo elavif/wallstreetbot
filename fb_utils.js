@@ -1,24 +1,26 @@
 const request = require('request');
-
-function handleMessage (sender_psid, received_message) {
-      
-      // for POC, send back the message, reversed.
-      if (received_message.text){
-        var reversed_text = received_message.text.split("").reverse().join("");
-        sendText(sender_psid, reversed_text);
-      }
-}
-
-
-function handlePostback(sender_psid, received_postback) {
-
-}
+const db_utils = require('./db_utils');
 
 function sendText (sender_psid, reply){
+    console.log('sending message: '+reply);
     callSendAPI(sender_psid, {
           "text": reply
         });
 }
+
+function sendGlobalText(text) {
+  db_utils.get_all_sids().then(sids=>{
+    console.log('sending global message: '+text);
+    for (var i=0;i<sids.length;i++){
+      console.log(sids[i]);
+      callSendAPI(sids[i],{
+        "text": "🌎 " + text
+      });
+    }
+  });
+}
+
+
 
 function callSendAPI(sender_psid, message) {
       // Construct the message body
@@ -36,20 +38,38 @@ function callSendAPI(sender_psid, message) {
         "json": request_body
       }, (err, res, body) => {
         if (!err) {
-          console.log('message sent! Got response:');
-          console.log(body);
+          console.log('message sent!');
         } else {
           console.error("Unable to send message:" + err);
         }
       });
-} 
+}
+
+function getProfileInfo(sid) {
+  return new Promise((resolve, reject)=>{
+    request({
+          "uri": "https://graph.facebook.com/"+sid,
+          "qs": { "access_token": process.env.PAGE_ACCESS_TOKEN,
+            "fields":  "name,first_name,last_name"
+           },
+          "method": "GET",
+        }, (err, res, body) => {
+          if (!err) {
+            console.log('message sent! Got response:');
+            console.log(body);
+            resolve(JSON.parse(body));
+          } else {
+            console.error("Unable to send message:" + err);
+            reject(err)
+          }
+        });
+  });
+  //https://graph.facebook.com/<PSID>?fields=first_name,last_name,profile_pic&access_token=<PAGE_ACCESS_TOKEN>
+}
 
 module.exports = {
   callSendAPI: callSendAPI,
-
   sendText: sendText,
-
-  handleMessage: handleMessage,
-
-  handlePostback: handlePostback, 
+  sendGlobalText: sendGlobalText,
+  getProfileInfo: getProfileInfo
 }

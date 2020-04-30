@@ -8,8 +8,9 @@ const
 
 const fs = require('fs');
 const request = require('request');
-const { Client } = require('pg');
 const fb_utils = require('./fb_utils');
+const commands = require('./commands');
+const db_utils = require('./db_utils');
 
 // Sets server port and logs message on success
 app.listen(process.env.PORT || 1337, () => console.log('webhook is listening'));
@@ -36,9 +37,24 @@ app.post('/webhook', (req, res) => {
         // Check if the event is a message or postback and
         // pass the event to the appropriate handler function
         if (webhook_event.message) {
-          fb_utils.handleMessage(sender_psid, webhook_event.message);        
+          db_utils.get_user(sender_psid)
+              .then(res=>{
+                // add new user
+                if (res.length == 0){
+                  fb_utils.getProfileInfo(sender_psid).then(info => {
+                      db_utils.add_user(sender_psid, info.first_name).then(res=> {
+                         fb_utils.sendText(sender_psid, `Hello, ${info.first_name}! You have been registered.`);
+                      });
+                  });
+                }
+              });
+
+          if (webhook_event.message.text){
+            commands.parse(sender_psid, webhook_event.message.text)
+          }
+
         } else if (webhook_event.postback) {
-          fb_utils.handlePostback(sender_psid, webhook_event.postback);
+          //fb_utils.handlePostback(sender_psid, webhook_event.postback);
         }
     });
 
@@ -80,16 +96,14 @@ app.get('/webhook', (req, res) => {
 });
 
 app.get('/users', (req, res) => {
-   const client = new Client({
-     connectionString: process.env.DATABASE_URL,
-     ssl: process.env.hasOwnProperty("WSB_DO_USE_SSL"),
-   });
-
-   client.connect();
-
-   client.query('SELECT * FROM users', (error, results) => {
-        res.status(200).send(results);
-        client.end();
-   })
+  db_utils.get_users().then(qres => {
+    res.status(200).send(qres);
+  });
 });
+
+app.get('/info', (req,resp) => {
+  fb_utils.getProfileInfo(2973343992754997).then(res=>{
+    resp.status(200).send(res);
+  })
+})
 
