@@ -2,16 +2,19 @@ const fb_utils = require('./fb_utils');
 const db_utils = require('./db_utils');
 const market = require('./market');
 
-function parse(sid, str) {
+async function parse(sid, str) {
 
-	tokens = str.replace('@',' @ ').replace('$',' $ ').replace(/\s+/g,' ').split(' ');
+	var tokens = str.replace('@',' @ ').replace('$',' $ ').replace(/\s+/g,' ').split(' ');
 	var side="sell";
 	switch(tokens[0]) {
 		case "show":
 		case "display":
 			switch(tokens[1]) {
 				case "orders":
-					show_orders(sid);
+					show_orders(sid, tokens);
+					break;
+				default:
+					help_show(sid);
 					break;
 			}
 			break;
@@ -77,12 +80,50 @@ function find_symbol(tokens){
 	});
 }
 
-function show_orders(sid){
-	fb_utils.sendText(sid, 'no orders yet');
+function table_to_string(arr2d){
+	var str = "";
+	var col_lengths=[];
+	for (var j=0;j< arr2d[0].length;j++){
+		var max_length = 0;
+		for (var i=0;i<arr2d.length;i++){
+			if (arr2d[i][j].length > max_length)
+				max_length = arr2d[i][j].length;
+		}
+		if (j!= arr2d[0].length-1) max_length += 2;
+		col_lengths.push(max_length);
+	}
+	for (var i=0;i<arr2d.length;i++){
+		for (var j=0;j<arr2d[i].length;j++){
+			elem = arr2d[i][j];
+			while (elem.length < col_lengths[j]) elem += " ";
+			str += elem;
+		}
+		if (i != arr2d.length-1) str+="\n";
+	}
+	return str;
+}
+
+function show_orders(sid, tokens){
+	find_symbol(tokens).then(symbol=>{
+		if (symbol == ""){
+			fb_utils.sendText(sid, "Please specify symbol");
+		}
+		db_utils.get_order_book(symbol, 'buy').then(orders=>{
+			console.log(orders);
+			var buy_txt = "Buy-side:\n";
+			var table = ["user ", ""]
+			console.log(buy_txt);
+		});
+
+	})
+}
+
+function help_show(sid){
+	fb_utils.sendText(sid, 'Commands:\nshow orders ...\nshow positions ...');
 }
 
 function help(sid){
-	fb_utils.sendText(sid, 'i hope this is helpful');
+	fb_utils.sendText(sid, 'Commands:\nbuy ...\nsell ...\nshow\n...');
 }
 
 

@@ -2,7 +2,6 @@ const request = require('request');
 const db_utils = require('./db_utils');
 
 function sendText (sender_psid, reply){
-    console.log('sending message: '+reply);
     callSendAPI(sender_psid, {
           "text": reply
         });
@@ -12,7 +11,6 @@ function sendGlobalText(text) {
   db_utils.get_all_sids().then(sids=>{
     console.log('sending global message: '+text);
     for (var i=0;i<sids.length;i++){
-      console.log(sids[i]);
       callSendAPI(sids[i],{
         "text": "🌎 " + text
       });
@@ -38,7 +36,7 @@ function callSendAPI(sender_psid, message) {
         "json": request_body
       }, (err, res, body) => {
         if (!err) {
-          console.log('message sent!');
+          //console.log('message sent!');
         } else {
           console.error("Unable to send message:" + err);
         }

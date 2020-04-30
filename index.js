@@ -50,7 +50,7 @@ app.post('/webhook', (req, res) => {
               });
 
           if (webhook_event.message.text){
-            commands.parse(sender_psid, webhook_event.message.text)
+            commands.parse(sender_psid, webhook_event.message.text);
           }
 
         } else if (webhook_event.postback) {

@@ -10,7 +10,7 @@ function order(sid, side, symbol, price, quantity){
 }
 
 
-async function check_execution(symbol) {
+async function check_execution(symbol) { (async() => {
 	var check_again = false;
 	const client = await db_utils.get_pool().connect();
 	try {
@@ -45,6 +45,7 @@ async function check_execution(symbol) {
 					})
 				});
 			}
+			check_again = true;
 		}
 
 		await client.query('COMMIT');
@@ -60,9 +61,9 @@ async function check_execution(symbol) {
 	}
 
 
-}
+})().catch(e => console.error(e.stack));}
 
-async function modify_position(sid, symbol, inc_units, inc_currency) {
+async function modify_position(sid, symbol, inc_units, inc_currency) { (async() => {
 	const client = await db_utils.get_pool().connect();
 	try {
 		await client.query('BEGIN');
@@ -81,9 +82,10 @@ async function modify_position(sid, symbol, inc_units, inc_currency) {
 		client.release();
 	}
 
-}
+})().catch(e => console.error(e.stack));}
 
 
 module.exports = {
 	order: order,
+	modify_position: modify_position,
 }

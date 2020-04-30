@@ -14,19 +14,18 @@ function get_pool(){
 
 
 function query(str, replace_list=[]){
-	return new Promise(
-			(resolve, reject) =>{
-				get_pool().connect().then(client=>
-				client.query(str, replace_list).then(res => resolve(res.rows)).catch(
-					err => {
+	return get_pool().connect().then(client=>
+				client.query(str, replace_list).then(res => {
+					client.release();
+					return res.rows;
+				}).catch(err => {
+					client.release();
 					console.log(err.stack);
-					reject(err);
 				}));
-			});
 }
 
 function get_symbols(){
-	return query('SELECT symbol from symbols;').then(res=>{
+	return query('SELECT symbol from symbols').then(res=>{
 		ret = [];
 		for (var i=0;i<res.length;i++){
 			ret.push(res[i].symbol);
@@ -63,7 +62,7 @@ function get_order_book(symbol, side){
 	if (side == "buy"){
 		order="DESC";
 	}
-	return query('SELECT price, quantity FROM orders WHERE symbol=$1 AND side=$2 AND status=\'open\' ORDER BY PRICE '+order+' time ASC;');
+	return query('SELECT orders.price, orders.quantity, users.name FROM orders INNER JOIN users on orders.sid = users.sid WHERE orders.symbol=$1 AND orders.side=$2 AND orders.status=\'open\' ORDER BY orders.price '+order+', orders.time ASC;', [symbol, side]);
 }
 
 function add_order(sid, side, symbol, price, quantity){
