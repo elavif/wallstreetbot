@@ -6,10 +6,10 @@ async function parse(sid, str) {
 
 	var tokens = str.replace('@',' @ ').replace('$',' $ ').replace(/\s+/g,' ').split(' ');
 	var side="sell";
-	switch(tokens[0]) {
+	switch(tokens[0].toLowerCase()) {
 		case "show":
 		case "display":
-			switch(tokens[1]) {
+			switch(tokens[1].toLowerCase()) {
 				case "orders":
 					show_orders(sid, tokens);
 					break;
@@ -34,7 +34,7 @@ async function parse(sid, str) {
 			break;
 
 		case "admin":
-			switch(tokens[1]){
+			switch(tokens[1].toLowerCase()){
 				case "bestow":
 					admin_bestow(sid, tokens);
 					break;
