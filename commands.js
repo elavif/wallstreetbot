@@ -5,6 +5,8 @@ const market = require('./market');
 async function parse(sid, str) {
 
 	var tokens = str.replace('@',' @ ').replace('$',' $ ').replace(/\s+/g,' ').split(' ');
+	tokens.push("");
+	tokens.push("");
 	var side="sell";
 	switch(tokens[0].toLowerCase()) {
 		case "show":
