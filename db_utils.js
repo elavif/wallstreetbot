@@ -34,6 +34,10 @@ function get_symbols(){
 	});
 }
 
+function get_symbol_descriptions(){
+	return query('SELECT * FROM symbols');
+}
+
 function get_users(){
 	//return query('INSERT INTO users (sid, name) values (314, \'PI\')');
 	return query('SELECT * FROM users');
@@ -65,6 +69,10 @@ function get_order_book(symbol, side){
 	return query('SELECT orders.price, orders.quantity, users.name FROM orders INNER JOIN users on orders.sid = users.sid WHERE orders.symbol=$1 AND orders.side=$2 AND orders.status=\'open\' ORDER BY orders.price '+order+', orders.time ASC;', [symbol, side]);
 }
 
+function get_position_table(symbol){
+	return query("SELECT positions.units, positions.currency, users.name FROM positions INNER JOIN users on positions.sid = users.sid WHERE positions.symbol=$1 ORDER BY positions.units DESC", [symbol]);	
+}
+
 function add_order(sid, side, symbol, price, quantity){
 	return query("INSERT INTO orders (sid, side, symbol, price, quantity) VALUES ($1, $2, $3, $4, $5)",
 		[sid, side, symbol, price, quantity]);
@@ -79,6 +87,8 @@ module.exports = {
 	get_user: get_user,
 	add_user: add_user,
 	get_symbols: get_symbols,
+	get_symbol_descriptions: get_symbol_descriptions,
 	get_order_book: get_order_book,
+	get_position_table: get_position_table,
 	add_order,
 }

@@ -13,6 +13,11 @@ async function parse(sid, str) {
 				case "orders":
 					show_orders(sid, tokens);
 					break;
+				case "positions":
+					show_positions(sid, tokens);
+					break;
+				case "symbols":
+					show_symbols(sid);
 				default:
 					help_show(sid);
 					break;
@@ -108,22 +113,66 @@ function show_orders(sid, tokens){
 		if (symbol == ""){
 			fb_utils.sendText(sid, "Please specify symbol");
 		}
-		db_utils.get_order_book(symbol, 'buy').then(orders=>{
-			console.log(orders);
-			var buy_txt = "Buy-side:\n";
-			var table = ["user ", ""]
-			console.log(buy_txt);
-		});
-
+		else {
+			db_utils.get_order_book(symbol, 'buy').then(orders=>{
+				console.log(orders);
+				var buy_txt = "Buy-side:\n";
+				var table = [["user", "#", "$"]];
+				for (var i=0;i<orders.length;i++){
+					table.push([orders[i].name.substring(0,5), orders[i].quantity, orders[i].price]);
+				}
+				buy_txt += table_to_string(table);
+				fb_utils.sendText(sid, buy_txt);
+			});
+			db_utils.get_order_book(symbol, 'sell').then(orders=>{
+				console.log(orders);
+				var sell_txt = "Sell-side:\n";
+				var table = [["user", "#", "$"]];
+				for (var i=0;i<orders.length;i++){
+					table.push([orders[i].name.substring(0,5), orders[i].quantity, orders[i].price]);
+				}
+				sell_txt += table_to_string(table);
+				fb_utils.sendText(sid, sell_txt)
+			});
+		}
 	})
 }
 
+function show_positions(sid, tokens){
+		find_symbol(tokens).then(symbol=>{
+		if (symbol == ""){
+			fb_utils.sendText(sid, "Please specify symbol");
+		}
+		else {
+			db_utils.get_position_table(symbol).then(positions=>{
+				console.log(positions);
+				var table = [["user", "#units", "$"]];
+				for (var i=0;i<positions.length;i++){
+					table.push([positions[i].name.substring(0,5), positions[i].units, positions[i].currency]);
+				}
+				fb_utils.sendText(sid, table_to_string(table))
+			});
+		}
+	})
+}
+
+function show_symbols(sid){
+	db_utils.get_symbol_descriptions().then(descs=>{
+		console.log(descs);
+		var txt = "";
+		for (var i=0;i<descs.length;i++){
+			txt+= `${descs[i].symbol}: ${descs[i].description}\n`;
+		}
+		fb_utils.sendText(sid, txt);
+	});
+}
+
 function help_show(sid){
-	fb_utils.sendText(sid, 'Commands:\nshow orders ...\nshow positions ...');
+	fb_utils.sendText(sid, 'Commands:\nshow orders ...\nshow positions ...\nshow symbols');
 }
 
 function help(sid){
-	fb_utils.sendText(sid, 'Commands:\nbuy ...\nsell ...\nshow\n...');
+	fb_utils.sendText(sid, 'Commands:\nbuy ...\nsell ...\nshow...');
 }
 
 
