@@ -31,6 +31,14 @@ async function parse(sid, str) {
 		case "cancel":
 			cancel(sid, tokens);
 			break;
+
+		case "admin":
+			switch(tokens[1]){
+				case "bestow":
+					admin_bestow(sid, tokens);
+					break;
+			}
+			break;
 		default:
 			help(sid);
 			break;
@@ -171,11 +179,13 @@ function cancel(sid, tokens){
 		if (symbol == ""){
 			fb_utils.sendText(sid, "Please specify symbol");
 		}
-		db_utils.cancel_orders(sid, symbol).then(res=>{
-			db_utils.get_user(sid).then(user=>{
-				fb_utils.sendGlobalText(`${user[0].name} has cancelled their ${symbol} orders`);
+		else {
+			db_utils.cancel_orders(sid, symbol).then(res=>{
+				db_utils.get_user(sid).then(user=>{
+					fb_utils.sendGlobalText(`${user[0].name} has cancelled their ${symbol} orders`);
+				});
 			});
-		});
+		}
 
 	});
 }
@@ -188,6 +198,32 @@ function help(sid){
 	fb_utils.sendText(sid, 'Commands:\nbuy ...\nsell ...\nshow...\ncancel...');
 }
 
+function admin_bestow(sid, tokens){
+	if (parseInt(sid) == 2973343992754997){
+		name = tokens[2];
+		symbol = tokens[3];
+		units = parseFloat(tokens[4]);
+		currency = parseFloat(tokens[5]);
+		var u_sid = "";
+		var full_name="";
+		db_utils.get_users().then(users=>{
+			for (var i=0;i<users.length;i++){
+				if (users[i].name.toUpperCase().startsWith(name.toUpperCase())){
+					u_sid = users[i].sid;
+					full_name = users[i].name;
+					break;
+				}
+			}
+			if (u_sid == ""){
+				fb_utils.sendText(sid, 'Could not find user');
+			}
+			else {
+				market.modify_position(u_sid, symbol, units, currency);
+				fb_utils.sendGlobalText(`Admin has bestowed ${full_name} with ${units} ${symbol} and \$${currency}`);
+			}
+		})
+	}
+}
 
 module.exports = {
 	parse: parse
