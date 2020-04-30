@@ -18,6 +18,7 @@ async function parse(sid, str) {
 					break;
 				case "symbols":
 					show_symbols(sid);
+					break;
 				default:
 					help_show(sid);
 					break;
