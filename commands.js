@@ -28,6 +28,9 @@ async function parse(sid, str) {
 		case "sell":
 			parse_order(sid, tokens, side);
 			break;
+		case "cancel":
+			cancel(sid, tokens);
+			break;
 		default:
 			help(sid);
 			break;
@@ -115,7 +118,6 @@ function show_orders(sid, tokens){
 		}
 		else {
 			db_utils.get_order_book(symbol, 'buy').then(orders=>{
-				console.log(orders);
 				var buy_txt = "Buy-side:\n";
 				var table = [["user", "#", "$"]];
 				for (var i=0;i<orders.length;i++){
@@ -125,7 +127,6 @@ function show_orders(sid, tokens){
 				fb_utils.sendText(sid, buy_txt);
 			});
 			db_utils.get_order_book(symbol, 'sell').then(orders=>{
-				console.log(orders);
 				var sell_txt = "Sell-side:\n";
 				var table = [["user", "#", "$"]];
 				for (var i=0;i<orders.length;i++){
@@ -145,7 +146,6 @@ function show_positions(sid, tokens){
 		}
 		else {
 			db_utils.get_position_table(symbol).then(positions=>{
-				console.log(positions);
 				var table = [["user", "#units", "$"]];
 				for (var i=0;i<positions.length;i++){
 					table.push([positions[i].name.substring(0,5), positions[i].units, positions[i].currency]);
@@ -158,7 +158,6 @@ function show_positions(sid, tokens){
 
 function show_symbols(sid){
 	db_utils.get_symbol_descriptions().then(descs=>{
-		console.log(descs);
 		var txt = "";
 		for (var i=0;i<descs.length;i++){
 			txt+= `${descs[i].symbol}: ${descs[i].description}\n`;
@@ -167,12 +166,26 @@ function show_symbols(sid){
 	});
 }
 
+function cancel(sid, tokens){
+	find_symbol(tokens).then(symbol=>{
+		if (symbol == ""){
+			fb_utils.sendText(sid, "Please specify symbol");
+		}
+		db_utils.cancel_orders(sid, symbol).then(res=>{
+			db_utils.get_user(sid).then(user=>{
+				fb_utils.sendGlobalText(`${user[0].name} has cancelled their ${symbol} orders`);
+			});
+		});
+
+	});
+}
+
 function help_show(sid){
 	fb_utils.sendText(sid, 'Commands:\nshow orders ...\nshow positions ...\nshow symbols');
 }
 
 function help(sid){
-	fb_utils.sendText(sid, 'Commands:\nbuy ...\nsell ...\nshow...');
+	fb_utils.sendText(sid, 'Commands:\nbuy ...\nsell ...\nshow...\ncancel...');
 }
 
 

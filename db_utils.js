@@ -78,6 +78,10 @@ function add_order(sid, side, symbol, price, quantity){
 		[sid, side, symbol, price, quantity]);
 }
 
+function cancel_orders(sid, symbol){
+	return query("UPDATE orders SET status='filled' WHERE sid=$1 AND symbol=$2", [sid, symbol]);
+}
+
 
 module.exports = {
 	get_pool,
@@ -90,5 +94,6 @@ module.exports = {
 	get_symbol_descriptions: get_symbol_descriptions,
 	get_order_book: get_order_book,
 	get_position_table: get_position_table,
-	add_order,
+	add_order:add_order,
+	cancel_orders:cancel_orders,
 }
